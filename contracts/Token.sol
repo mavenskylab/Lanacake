@@ -21,8 +21,11 @@ contract Token {
     
     function transfer(address to, uint value) public returns(bool) {
         require(balanceOf(msg.sender) >= value, 'insufficient balance');
-        balances[to] += value;
-        balances[msg.sender] -= value;
+        // Gas savings
+        unchecked {
+            balances[to] += value;
+            balances[msg.sender] -= value;
+        }
         emit Transfer(msg.sender, to, value);
         return true;
     }
@@ -30,8 +33,11 @@ contract Token {
     function transferFrom(address from, address to, uint value) public returns(bool) {
         require(balanceOf(from) >= value, 'insufficient balance');
         require(allowance[from][msg.sender] >= value, 'insufficient allowance');
-        balances[to] += value;
-        balances[from] -= value;
+        // Gas savings
+        unchecked {
+            balances[to] += value;
+            balances[from] -= value;
+        }
         emit Transfer(from, to, value);
         return true;
     }
