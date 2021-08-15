@@ -43,9 +43,7 @@ import "../../access/Ownable.sol";
 
     /**
      * @dev Sets the values for {name} and {symbol}, initializes {decimals} with
-     * a default value of 18.
-     *
-     * To select a different value for {decimals}, use {_setupDecimals}.
+     * a value of 18.
      *
      * All three of these values are immutable: they can only be set once during
      * construction.
