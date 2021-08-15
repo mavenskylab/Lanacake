@@ -1,11 +1,11 @@
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.2;
 
-contract LanaToken {
+contract Token {
     mapping(address => uint) public balances;
     mapping(address => mapping(address => uint)) public allowance;
     uint public totalSupply = 10000 * 10 ** 18;
-    string public name = "Bambo";
-    string public symbol = "BAMB";
+    string public name = "LanaCake";
+    string public symbol = "LANA";
     uint public decimals = 18;
     
     event Transfer(address indexed from, address indexed to, uint value);
