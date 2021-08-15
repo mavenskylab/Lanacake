@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.4;
 
-import "../../contracts/GSN/Context.sol";
+import "../../GSN/Context.sol";
 import "./IBEP20.sol";
-import "../../contracts/access/Ownable.sol";
+import "../../access/Ownable.sol";
 
 /**
  * @dev Implementation of the {IBEP20} interface.
@@ -189,10 +189,11 @@ import "../../contracts/access/Ownable.sol";
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
+        require(_allowances[_msgSender()][spender] >= subtractedValue, "BEP20: decreased allowance below zero");
         _approve(
             _msgSender(),
             spender,
-            _allowances[_msgSender()][spender].sub(subtractedValue, 'BEP20: decreased allowance below zero')
+            _allowances[_msgSender()][spender] - subtractedValue
         );
         return true;
     }
