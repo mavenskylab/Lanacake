@@ -1,2 +1,2 @@
-# Lanacake
-Lanacake coin using BSC
+# LanaCake
+LanaCake coin using BSC
