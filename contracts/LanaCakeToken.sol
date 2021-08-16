@@ -23,7 +23,7 @@ contract LanaCakeToken is BEP20 {
 
     LanaCakeDividendTracker public dividendTracker;
 
-    address public buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952; // Need to change
+    address public buyBackWallet = 0xe24d23E712f7180Da1cD032FC6134d02C9B9c317; // Need to change
 
     uint256 public maxBuyTranscationAmount = toMint;
     uint256 public maxSellTransactionAmount = toMint;
