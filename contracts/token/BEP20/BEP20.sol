@@ -30,10 +30,10 @@ import "../../access/Ownable.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IBEP20-approve}.
  */
- contract BEP20 is Context, IBEP20, Ownable {
-    mapping (address => uint256) private _balances;
+contract BEP20 is Context, IBEP20, Ownable {
+    mapping(address => uint256) private _balances;
 
-    mapping (address => mapping (address => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
 
@@ -48,7 +48,7 @@ import "../../access/Ownable.sol";
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor (string memory name_, string memory symbol_) {
+    constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
         _decimals = 18;
@@ -57,42 +57,42 @@ import "../../access/Ownable.sol";
     /**
      * @dev Returns the bep token owner.
      */
-    function getOwner() external override view returns (address) {
+    function getOwner() external view override returns (address) {
         return owner();
     }
 
     /**
      * @dev Returns the token name.
      */
-    function name() public override view returns (string memory) {
+    function name() public view override returns (string memory) {
         return _name;
     }
 
     /**
      * @dev Returns the token decimals.
      */
-    function decimals() public override view returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 
     /**
      * @dev Returns the token symbol.
      */
-    function symbol() public override view returns (string memory) {
+    function symbol() public view override returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev See {BEP20-totalSupply}.
      */
-    function totalSupply() public override view returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         return _totalSupply;
     }
 
     /**
      * @dev See {BEP20-balanceOf}.
      */
-    function balanceOf(address account) public override view returns (uint256) {
+    function balanceOf(address account) public view override returns (uint256) {
         return _balances[account];
     }
 
@@ -104,7 +104,11 @@ import "../../access/Ownable.sol";
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount)
+        public
+        override
+        returns (bool)
+    {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -112,7 +116,12 @@ import "../../access/Ownable.sol";
     /**
      * @dev See {BEP20-allowance}.
      */
-    function allowance(address owner, address spender) public override view returns (uint256) {
+    function allowance(address owner, address spender)
+        public
+        view
+        override
+        returns (uint256)
+    {
         return _allowances[owner][spender];
     }
 
@@ -123,7 +132,11 @@ import "../../access/Ownable.sol";
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) public override returns (bool) {
+    function approve(address spender, uint256 amount)
+        public
+        override
+        returns (bool)
+    {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -146,7 +159,10 @@ import "../../access/Ownable.sol";
         uint256 amount
     ) public override returns (bool) {
         _transfer(sender, recipient, amount);
-        require(balanceOf(sender) >= amount, "BEP20: transfer amount exceeds balance");
+        require(
+            balanceOf(sender) >= amount,
+            "BEP20: transfer amount exceeds balance"
+        );
         _approve(
             sender,
             _msgSender(),
@@ -167,8 +183,15 @@ import "../../access/Ownable.sol";
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender] = addedValue);
+    function increaseAllowance(address spender, uint256 addedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            _msgSender(),
+            spender,
+            _allowances[_msgSender()][spender] = addedValue
+        );
         return true;
     }
 
@@ -186,8 +209,14 @@ import "../../access/Ownable.sol";
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
-        require(_allowances[_msgSender()][spender] >= subtractedValue, "BEP20: decreased allowance below zero");
+    function decreaseAllowance(address spender, uint256 subtractedValue)
+        public
+        returns (bool)
+    {
+        require(
+            _allowances[_msgSender()][spender] >= subtractedValue,
+            "BEP20: decreased allowance below zero"
+        );
         _approve(
             _msgSender(),
             spender,
@@ -223,13 +252,20 @@ import "../../access/Ownable.sol";
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-    function _transfer(address sender, address recipient, uint256 amount) internal virtual {
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal virtual {
         require(sender != address(0), "BEP20: transfer from the zero address");
         require(recipient != address(0), "BEP20: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        require(balanceOf(sender) >= amount, "BEP20: transfer amount exceeds balance");
+        require(
+            balanceOf(sender) >= amount,
+            "BEP20: transfer amount exceeds balance"
+        );
         // Gas savings
         unchecked {
             _balances[sender] -= amount;
@@ -273,7 +309,10 @@ import "../../access/Ownable.sol";
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        require(balanceOf(account) >= amount, "BEP20: burn amount exceeds balance");
+        require(
+            balanceOf(account) >= amount,
+            "BEP20: burn amount exceeds balance"
+        );
         // Gas savings
         unchecked {
             _balances[account] -= amount;
@@ -295,7 +334,11 @@ import "../../access/Ownable.sol";
      * - `owner` cannot be the zero address.
      * - `spender` cannot be the zero address.
      */
-    function _approve(address owner, address spender, uint256 amount) internal virtual {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
         require(owner != address(0), "BEP20: approve from the zero address");
         require(spender != address(0), "BEP20: approve to the zero address");
 
@@ -311,7 +354,10 @@ import "../../access/Ownable.sol";
      */
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        require(balanceOf(account) >= amount, "BEP20: burn amount exceeds balance");
+        require(
+            balanceOf(account) >= amount,
+            "BEP20: burn amount exceeds balance"
+        );
         _approve(
             account,
             _msgSender(),
@@ -333,5 +379,9 @@ import "../../access/Ownable.sol";
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
- }
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+}

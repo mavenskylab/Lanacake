@@ -173,8 +173,7 @@ contract DividendPayingToken is
     {
         return
             uint256(
-                int256(magnifiedDividendPerShare *
-                    balanceOf(_owner)) +
+                int256(magnifiedDividendPerShare * balanceOf(_owner)) +
                     magnifiedDividendCorrections[_owner]
             ) / magnitude;
     }
@@ -207,9 +206,9 @@ contract DividendPayingToken is
     function _mint(address account, uint256 value) internal override {
         super._mint(account, value);
 
-        magnifiedDividendCorrections[account] = magnifiedDividendCorrections[
-            account
-        ] - int256(magnifiedDividendPerShare * value);
+        magnifiedDividendCorrections[account] =
+            magnifiedDividendCorrections[account] -
+            int256(magnifiedDividendPerShare * value);
     }
 
     /// @dev Internal function that burns an amount of the token of a given account.
@@ -219,9 +218,9 @@ contract DividendPayingToken is
     function _burn(address account, uint256 value) internal override {
         super._burn(account, value);
 
-        magnifiedDividendCorrections[account] = magnifiedDividendCorrections[
-            account
-        ] + int256(magnifiedDividendPerShare * value);
+        magnifiedDividendCorrections[account] =
+            magnifiedDividendCorrections[account] +
+            int256(magnifiedDividendPerShare * value);
     }
 
     function _setBalance(address account, uint256 newBalance) internal {
