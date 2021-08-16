@@ -3,10 +3,9 @@
 pragma solidity ^0.8.4;
 
 import "./token/dividend/DividendPayingToken.sol";
-import "./access/Ownable.sol";
 import "./libraries/IterableMapping.sol";
 
-contract LanaCakeDividendTracker is DividendPayingToken, Ownable {
+contract LanaCakeDividendTracker is DividendPayingToken {
     using IterableMapping for IterableMapping.Map;
 
     IterableMapping.Map private tokenHoldersMap;
@@ -106,18 +105,16 @@ contract LanaCakeDividendTracker is DividendPayingToken, Ownable {
 
         if (index >= 0) {
             if (uint256(index) > lastProcessedIndex) {
-                iterationsUntilProcessed = index.sub(
-                    int256(lastProcessedIndex)
-                );
+                iterationsUntilProcessed = index - int256(lastProcessedIndex);
             } else {
                 uint256 processesUntilEndOfArray = tokenHoldersMap.keys.length >
                     lastProcessedIndex
-                    ? tokenHoldersMap.keys.length.sub(lastProcessedIndex)
+                    ? tokenHoldersMap.keys.length - lastProcessedIndex
                     : 0;
 
-                iterationsUntilProcessed = index.add(
-                    int256(processesUntilEndOfArray)
-                );
+                iterationsUntilProcessed =
+                    index +
+                    int256(processesUntilEndOfArray);
             }
         }
 
@@ -126,10 +123,10 @@ contract LanaCakeDividendTracker is DividendPayingToken, Ownable {
 
         lastClaimTime = lastClaimTimes[account];
 
-        nextClaimTime = lastClaimTime > 0 ? lastClaimTime.add(claimWait) : 0;
+        nextClaimTime = lastClaimTime > 0 ? lastClaimTime + claimWait : 0;
 
         secondsUntilAutoClaimAvailable = nextClaimTime > block.timestamp
-            ? nextClaimTime.sub(block.timestamp)
+            ? nextClaimTime - block.timestamp
             : 0;
     }
 
@@ -170,7 +167,7 @@ contract LanaCakeDividendTracker is DividendPayingToken, Ownable {
             return false;
         }
 
-        return block.timestamp.sub(lastClaimTime) >= claimWait;
+        return block.timestamp - lastClaimTime >= claimWait;
     }
 
     function setBalance(address payable account, uint256 newBalance)
@@ -235,7 +232,7 @@ contract LanaCakeDividendTracker is DividendPayingToken, Ownable {
             uint256 newGasLeft = gasleft();
 
             if (gasLeft > newGasLeft) {
-                gasUsed = gasUsed.add(gasLeft.sub(newGasLeft));
+                gasUsed = gasUsed + (gasLeft - newGasLeft);
             }
 
             gasLeft = newGasLeft;

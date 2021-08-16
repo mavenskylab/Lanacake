@@ -3,10 +3,11 @@
 pragma solidity ^0.8.4;
 
 import "./Token/BEP20/BEP20.sol";
-import "./access/Ownable.sol";
 import "./uniswap/interfaces/IUniswapV2Router02.sol";
+import "./uniswap/interfaces/IUniswapV2Factory.sol";
+import "./LanaCakeDividendTracker.sol";
 
-contract LanaCakeToken is BEP20, Ownable {
+contract LanaCakeToken is BEP20 {
     uint256 public totalSupply = 10000 * 10**18;
 
     IUniswapV2Router02 public uniswapV2Router;
@@ -20,6 +21,8 @@ contract LanaCakeToken is BEP20, Ownable {
     bool public tradingIsEnabled = false;
     bool public buyBackEnabled = false;
     bool public buyBackRandomEnabled = true;
+
+    LanaCakeDividendTracker public dividendTracker;
 
     address public buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952; // Need to change
 
@@ -107,8 +110,6 @@ contract LanaCakeToken is BEP20, Ownable {
     );
 
     constructor() BEP20("LanaCake", "LANA") {
-        balances[msg.sender] = totalSupply;
-
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(
             0x10ED43C718714eb63d5aA57B78B54704E256024E
         ); //0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3
