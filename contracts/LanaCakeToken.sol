@@ -73,7 +73,7 @@ contract LanaCakeToken is BEP20, Ownable {
 
     event SwapAndLiquify(
         uint256 tokensSwapped,
-        uint256 ethReceived,
+        uint256 bnbReceived,
         uint256 tokensIntoLiqudity
     );
 
@@ -425,5 +425,90 @@ contract LanaCakeToken is BEP20, Ownable {
 	    		emit ProcessedDividendTracker(iterations, claims, lastProcessedIndex, true, gas, tx.origin);
 	    	} catch {}
         }
+    }
+
+    function swapTokensForBNB(uint256 tokenAmount) private {
+        // generate the uniswap pair path of token -> wbnb
+        address[] memory path = new address[](2);
+        path[0] = address(this);
+        path[1] = uniswapV2Router.WBNB();
+
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
+
+        // make the swap
+        uniswapV2Router.swapExactTokensForBNBSupportingFeeOnTransferTokens(
+            tokenAmount,
+            0, // accept any amount of BNB
+            path,
+            address(this),
+            block.timestamp
+        );
+        
+    }
+    
+    function swapBNBForTokens(uint256 amount) private {
+        // generate the uniswap pair path of token -> wbnb
+        address[] memory path = new address[](2);
+        path[0] = uniswapV2Router.WBNB();
+        path[1] = address(this);
+
+      // make the swap
+        uniswapV2Router.swapExactBNBForTokensSupportingFeeOnTransferTokens{value: amount}(
+            0, // accept any amount of Tokens
+            path,
+            deadAddress, // Burn address
+            block.timestamp.add(300)
+        );
+        
+        emit SwapBNBForTokens(amount, path);
+    }
+
+    function swapTokensForDividendToken(uint256 tokenAmount, address recipient) private {
+        // generate the uniswap pair path of wbnb -> busd
+        address[] memory path = new address[](3);
+        path[0] = address(this);
+        path[1] = uniswapV2Router.WBNB();
+        path[2] = _dividendToken;
+
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
+
+        // make the swap
+        uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            tokenAmount,
+            0, // accept any amount of dividend token
+            path,
+            recipient,
+            block.timestamp
+        );
+        
+    }
+
+    function swapAndSendDividends(uint256 tokens) private {
+        swapTokensForDividendToken(tokens, address(this));
+        uint256 dividends = IBEP20(_dividendToken).balanceOf(address(this));
+        bool success = IBEP20(_dividendToken).transfer(address(dividendTracker), dividends);
+        
+        if (success) {
+            dividendTracker.distributeDividends(dividends);
+            emit SendDividends(tokens, dividends);
+        }
+    }
+    
+    function swapAndSendDividendsInBNB(uint256 tokens) private {
+        uint256 currentBNBBalance = address(this).balance;
+        swapTokensForBNB(tokens);
+        uint256 newBNBBalance = address(this).balance;
+        
+        uint256 dividends = newBNBBalance - currentBNBBalance;
+        (bool success,) = address(dividendTracker).call{value: dividends}("");
+        
+        if (success) {
+            dividendTracker.distributeDividends(dividends);
+            emit SendDividends(tokens, dividends);
+        }
+    }
+    
+    function transferToBuyBackWallet(address payable recipient, uint256 amount) private {
+        recipient.transfer(amount);
     }
 }
