@@ -1,12 +1,16 @@
-// SPDX-License-Identifier: Unlicensed
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.4;
 
 import "./Token/BEP20/BEP20.sol";
 import "./access/Ownable.sol";
+import "./uniswap/interfaces/IUniswapV2Router02.sol";
 
-contract LanaToken is BEP20, Ownable {
+contract LanaCakeToken is BEP20, Ownable {
     uint256 public totalSupply = 10000 * 10 ** 18;
+
+    IUniswapV2Router02 public uniswapV2Router;
+    address public immutable uniswapV2Pair;
 
     address public _dividendToken = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     address public immutable deadAddress = 0x000000000000000000000000000000000000dEaD;
