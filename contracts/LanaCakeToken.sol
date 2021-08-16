@@ -2,13 +2,12 @@
 
 pragma solidity ^0.8.4;
 
-import "./Token/BEP20/BEP20.sol";
 import "./uniswap/interfaces/IUniswapV2Router02.sol";
 import "./uniswap/interfaces/IUniswapV2Factory.sol";
 import "./LanaCakeDividendTracker.sol";
 
 contract LanaCakeToken is BEP20 {
-    uint256 public totalSupply = 10000 * 10**18;
+    uint256 private totalSupply = 10000000 * 10**18;
 
     IUniswapV2Router02 public uniswapV2Router;
     address public immutable uniswapV2Pair;
@@ -28,7 +27,7 @@ contract LanaCakeToken is BEP20 {
 
     uint256 public maxBuyTranscationAmount = totalSupply;
     uint256 public maxSellTransactionAmount = totalSupply;
-    uint256 public swapTokensAtAmount = totalSupply / 100000;
+    uint256 public swapTokensAtAmount = totalSupply / 100;
     uint256 public maxWalletToken = totalSupply;
 
     uint256 public dividendRewardsFee;
@@ -177,15 +176,15 @@ contract LanaCakeToken is BEP20 {
         setTradingIsEnabled(false);
         dividendRewardsFee = 0;
         marketingFee = 0;
-        maxBuyTranscationAmount = totalSupply();
-        maxWalletToken = totalSupply();
+        maxBuyTranscationAmount = super.totalSupply();
+        maxWalletToken = super.totalSupply();
     }
 
     function afterPreSale() external onlyOwner {
         dividendRewardsFee = 8;
         marketingFee = 4;
-        maxBuyTranscationAmount = totalSupply();
-        maxWalletToken = totalSupply();
+        maxBuyTranscationAmount = super.totalSupply();
+        maxWalletToken = super.totalSupply();
     }
 
     function setTradingIsEnabled(bool _enabled) public onlyOwner {
@@ -213,26 +212,37 @@ contract LanaCakeToken is BEP20 {
         swapBNBForTokens((buyBackBalance / 10**2) * amount);
     }
 
-    // function updateDividendTracker(address newAddress) public onlyOwner {
-    //     require(newAddress != address(dividendTracker), "LanaCake: The dividend tracker already has that address");
+    function updateDividendTracker(address newAddress) public onlyOwner {
+        require(
+            newAddress != address(dividendTracker),
+            "LanaCake: The dividend tracker already has that address"
+        );
 
-    //     LanaCakeDividendTracker newDividendTracker = LanaCakeDividendTracker(payable(newAddress));
+        LanaCakeDividendTracker newDividendTracker = LanaCakeDividendTracker(
+            payable(newAddress)
+        );
 
-    //     require(newDividendTracker.owner() == address(this), "LanaCake: The new dividend tracker must be owned by the token contract");
+        require(
+            newDividendTracker.owner() == address(this),
+            "LanaCake: The new dividend tracker must be owned by the token contract"
+        );
 
-    //     newDividendTracker.excludeFromDividends(address(newDividendTracker));
-    //     newDividendTracker.excludeFromDividends(address(this));
-    //     newDividendTracker.excludeFromDividends(address(uniswapV2Router));
+        newDividendTracker.excludeFromDividends(address(newDividendTracker));
+        newDividendTracker.excludeFromDividends(address(this));
+        newDividendTracker.excludeFromDividends(address(uniswapV2Router));
 
-    //     emit UpdateDividendTracker(newAddress, address(dividendTracker));
+        emit UpdateDividendTracker(newAddress, address(dividendTracker));
 
-    //     dividendTracker = newDividendTracker;
-    // }
+        dividendTracker = newDividendTracker;
+    }
 
-    // function updateDividendRewardFee(uint8 newFee) public onlyOwner {
-    //     require(newFee >= 0 && newFee <= 10, "LanaCake: Dividend reward tax must be between 0 and 10");
-    //     dividendRewardsFee = newFee;
-    // }
+    function updateDividendRewardFee(uint8 newFee) public onlyOwner {
+        require(
+            newFee >= 0 && newFee <= 10,
+            "LanaCake: Dividend reward tax must be between 0 and 10"
+        );
+        dividendRewardsFee = newFee;
+    }
 
     function updateMarketingFee(uint8 newFee) public onlyOwner {
         require(
@@ -461,7 +471,7 @@ contract LanaCakeToken is BEP20 {
             !isBlackListed(recipient),
             "Token transfer refused. Receiver is on blacklist"
         );
-        super._beforeTokenTransfer(from, to, amount);
+        super._beforeTokenTransfer(sender, recipient, amount);
         require(sender != address(0), "BEP20: transfer from the zero address");
         require(recipient != address(0), "BEP20: transfer to the zero address");
 
@@ -588,7 +598,7 @@ contract LanaCakeToken is BEP20 {
             0, // accept any amount of Tokens
             path,
             deadAddress, // Burn address
-            block.timestamp.add(300)
+            block.timestamp + 300
         );
 
         emit SwapBNBForTokens(amount, path);
