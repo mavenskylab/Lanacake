@@ -7,7 +7,7 @@ import "./uniswap/interfaces/IUniswapV2Factory.sol";
 import "./LanaCakeDividendTracker.sol";
 
 contract LanaCakeToken is BEP20 {
-    uint256 private totalSupply = 10000000 * 10**18;
+    uint256 private toMint = 10000000 * 10**18;
 
     IUniswapV2Router02 public uniswapV2Router;
     address public immutable uniswapV2Pair;
@@ -25,10 +25,10 @@ contract LanaCakeToken is BEP20 {
 
     address public buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952; // Need to change
 
-    uint256 public maxBuyTranscationAmount = totalSupply;
-    uint256 public maxSellTransactionAmount = totalSupply;
-    uint256 public swapTokensAtAmount = totalSupply / 100;
-    uint256 public maxWalletToken = totalSupply;
+    uint256 public maxBuyTranscationAmount = toMint;
+    uint256 public maxSellTransactionAmount = toMint;
+    uint256 public swapTokensAtAmount = toMint / 100;
+    uint256 public maxWalletToken = toMint;
 
     uint256 public dividendRewardsFee;
     uint256 public marketingFee;
@@ -109,6 +109,15 @@ contract LanaCakeToken is BEP20 {
     );
 
     constructor() BEP20("LanaCake", "LANA") {
+        uint256 _dividendRewardsFee = 8;
+        uint256 _marketingFee = 4;
+
+        dividendRewardsFee = _dividendRewardsFee;
+        marketingFee = _marketingFee;
+        totalFees = _dividendRewardsFee + _marketingFee;
+
+        dividendTracker = new LanaCakeDividendTracker();
+
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(
             0x10ED43C718714eb63d5aA57B78B54704E256024E
         );
@@ -121,6 +130,11 @@ contract LanaCakeToken is BEP20 {
 
         _setAutomatedMarketMakerPair(_uniswapV2Pair, true);
 
+        // exclude from receiving dividends
+        dividendTracker.excludeFromDividends(address(dividendTracker));
+        dividendTracker.excludeFromDividends(address(this));
+        dividendTracker.excludeFromDividends(address(_uniswapV2Router));
+
         // exclude from paying fees or having max transaction amount
         excludeFromFees(buyBackWallet, true);
         excludeFromFees(address(this), true);
@@ -129,7 +143,7 @@ contract LanaCakeToken is BEP20 {
         _mint is an internal function in BEP20.sol that is only called here,
         and CANNOT be called ever again
         */
-        _mint(owner(), totalSupply);
+        _mint(owner(), toMint);
     }
 
     receive() external payable {}
@@ -176,15 +190,15 @@ contract LanaCakeToken is BEP20 {
         setTradingIsEnabled(false);
         dividendRewardsFee = 0;
         marketingFee = 0;
-        maxBuyTranscationAmount = super.totalSupply();
-        maxWalletToken = super.totalSupply();
+        maxBuyTranscationAmount = totalSupply();
+        maxWalletToken = totalSupply();
     }
 
     function afterPreSale() external onlyOwner {
         dividendRewardsFee = 8;
         marketingFee = 4;
-        maxBuyTranscationAmount = super.totalSupply();
-        maxWalletToken = super.totalSupply();
+        maxBuyTranscationAmount = totalSupply();
+        maxWalletToken = totalSupply();
     }
 
     function setTradingIsEnabled(bool _enabled) public onlyOwner {
