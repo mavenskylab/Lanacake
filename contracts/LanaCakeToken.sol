@@ -5,9 +5,13 @@ pragma solidity ^0.8.4;
 import "./pancake-swap/interfaces/IPancakeRouter02.sol";
 import "./pancake-swap/interfaces/IPancakeFactory.sol";
 import "./LanaCakeDividendTracker.sol";
-import "./math/";
+import "./math/SafeMath.sol";
+import "./utils/Address.sol";
 
 contract LanaCakeToken is BEP20 {
+    using SafeMath for uint256;
+    using Address for address;
+
     uint256 private toMint = 10000000 * 10**18;
 
     IPancakeRouter02 public pancakeRouter02;
