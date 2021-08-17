@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-interface IUniswapV2Pair {
+interface IPancakePair {
     event Approval(
         address indexed owner,
         address indexed spender,

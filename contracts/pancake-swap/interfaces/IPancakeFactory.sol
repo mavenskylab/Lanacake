@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-interface IUniswapV2Factory {
+interface IPancakeFactory {
     event PairCreated(
         address indexed token0,
         address indexed token1,
@@ -30,4 +30,6 @@ interface IUniswapV2Factory {
     function setFeeTo(address) external;
 
     function setFeeToSetter(address) external;
+
+    function INIT_CODE_PAIR_HASH() external view returns (bytes32);
 }

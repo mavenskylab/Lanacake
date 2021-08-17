@@ -1,6 +1,6 @@
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.2;
 
-contract LanaToken {
+contract Token {
     mapping(address => uint) public balances;
     mapping(address => mapping(address => uint)) public allowance;
     uint public totalSupply = 10000 * 10 ** 18;
@@ -22,10 +22,10 @@ contract LanaToken {
     function transfer(address to, uint value) public returns(bool) {
         require(balanceOf(msg.sender) >= value, 'insufficient balance');
         // Gas savings
-        unchecked {
+        //unchecked {
             balances[to] += value;
             balances[msg.sender] -= value;
-        }
+        //}
         emit Transfer(msg.sender, to, value);
         return true;
     }
@@ -34,10 +34,10 @@ contract LanaToken {
         require(balanceOf(from) >= value, 'insufficient balance');
         require(allowance[from][msg.sender] >= value, 'insufficient allowance');
         // Gas savings
-        unchecked {
+        //unchecked {
             balances[to] += value;
             balances[from] -= value;
-        }
+        //}
         emit Transfer(from, to, value);
         return true;
     }

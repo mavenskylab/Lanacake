@@ -5,6 +5,8 @@ pragma solidity ^0.8.4;
 import "../../GSN/Context.sol";
 import "./IBEP20.sol";
 import "../../access/Ownable.sol";
+import '../../math/SafeMath.sol';
+import '../../utils/Address.sol';
 
 /**
  * @dev Implementation of the {IBEP20} interface.
@@ -31,6 +33,9 @@ import "../../access/Ownable.sol";
  * allowances. See {IBEP20-approve}.
  */
 contract BEP20 is Context, IBEP20, Ownable {
+    using SafeMath for uint256;
+    using Address for address;
+
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -43,14 +48,16 @@ contract BEP20 is Context, IBEP20, Ownable {
 
     /**
      * @dev Sets the values for {name} and {symbol}, initializes {decimals} with
-     * a value of 18.
+     * a default value of 18.
+     *
+     * To select a different value for {decimals}, use {_setupDecimals}.
      *
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(string memory name_, string memory symbol_) {
-        _name = name_;
-        _symbol = symbol_;
+    constructor(string memory name, string memory symbol) public {
+        _name = name;
+        _symbol = symbol;
         _decimals = 18;
     }
 
@@ -159,14 +166,13 @@ contract BEP20 is Context, IBEP20, Ownable {
         uint256 amount
     ) public override returns (bool) {
         _transfer(sender, recipient, amount);
-        require(
-            balanceOf(sender) >= amount,
-            "BEP20: transfer amount exceeds balance"
-        );
         _approve(
             sender,
             _msgSender(),
-            _allowances[sender][_msgSender()] - amount
+            _allowances[sender][_msgSender()].sub(
+                amount,
+                "BEP20: transfer amount exceeds allowance"
+            )
         );
         return true;
     }
@@ -190,7 +196,7 @@ contract BEP20 is Context, IBEP20, Ownable {
         _approve(
             _msgSender(),
             spender,
-            _allowances[_msgSender()][spender] = addedValue
+            _allowances[_msgSender()][spender].add(addedValue)
         );
         return true;
     }
@@ -213,14 +219,13 @@ contract BEP20 is Context, IBEP20, Ownable {
         public
         returns (bool)
     {
-        require(
-            _allowances[_msgSender()][spender] >= subtractedValue,
-            "BEP20: decreased allowance below zero"
-        );
         _approve(
             _msgSender(),
             spender,
-            _allowances[_msgSender()][spender] - subtractedValue
+            _allowances[_msgSender()][spender].sub(
+                subtractedValue,
+                "BEP20: decreased allowance below zero"
+            )
         );
         return true;
     }
@@ -256,21 +261,15 @@ contract BEP20 is Context, IBEP20, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) internal virtual {
+    ) internal {
         require(sender != address(0), "BEP20: transfer from the zero address");
         require(recipient != address(0), "BEP20: transfer to the zero address");
 
-        _beforeTokenTransfer(sender, recipient, amount);
-
-        require(
-            balanceOf(sender) >= amount,
+        _balances[sender] = _balances[sender].sub(
+            amount,
             "BEP20: transfer amount exceeds balance"
         );
-        // Gas savings
-        unchecked {
-            _balances[sender] -= amount;
-            _balances[recipient] += amount;
-        }
+        _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
 
@@ -279,17 +278,15 @@ contract BEP20 is Context, IBEP20, Ownable {
      *
      * Emits a {Transfer} event with `from` set to the zero address.
      *
-     * Requirements:
+     * Requirements
      *
      * - `to` cannot be the zero address.
      */
-    function _mint(address account, uint256 amount) internal virtual {
+    function _mint(address account, uint256 amount) internal {
         require(account != address(0), "BEP20: mint to the zero address");
 
-        _beforeTokenTransfer(address(0), account, amount);
-
-        _totalSupply += amount;
-        _balances[account] += amount;
+        _totalSupply = _totalSupply.add(amount);
+        _balances[account] = _balances[account].add(amount);
         emit Transfer(address(0), account, amount);
     }
 
@@ -299,32 +296,26 @@ contract BEP20 is Context, IBEP20, Ownable {
      *
      * Emits a {Transfer} event with `to` set to the zero address.
      *
-     * Requirements:
+     * Requirements
      *
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function _burn(address account, uint256 amount) internal virtual {
+    function _burn(address account, uint256 amount) internal {
         require(account != address(0), "BEP20: burn from the zero address");
 
-        _beforeTokenTransfer(account, address(0), amount);
-
-        require(
-            balanceOf(account) >= amount,
+        _balances[account] = _balances[account].sub(
+            amount,
             "BEP20: burn amount exceeds balance"
         );
-        // Gas savings
-        unchecked {
-            _balances[account] -= amount;
-            _totalSupply -= amount;
-        }
+        _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
     }
 
     /**
-     * @dev Sets `amount` as the allowance of `spender` over the `owner` s tokens.
+     * @dev Sets `amount` as the allowance of `spender` over the `owner`s tokens.
      *
-     * This internal function is equivalent to `approve`, and can be used to
+     * This is internal function is equivalent to `approve`, and can be used to
      * e.g. set automatic allowances for certain subsystems, etc.
      *
      * Emits an {Approval} event.
@@ -338,7 +329,7 @@ contract BEP20 is Context, IBEP20, Ownable {
         address owner,
         address spender,
         uint256 amount
-    ) internal virtual {
+    ) internal {
         require(owner != address(0), "BEP20: approve from the zero address");
         require(spender != address(0), "BEP20: approve to the zero address");
 
@@ -354,34 +345,13 @@ contract BEP20 is Context, IBEP20, Ownable {
      */
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        require(
-            balanceOf(account) >= amount,
-            "BEP20: burn amount exceeds balance"
-        );
         _approve(
             account,
             _msgSender(),
-            _allowances[account][_msgSender()] - amount
+            _allowances[account][_msgSender()].sub(
+                amount,
+                "BEP20: burn amount exceeds allowance"
+            )
         );
     }
-
-    /**
-     * @dev Hook that is called before any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * will be to transferred to `to`.
-     * - when `from` is zero, `amount` tokens will be minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens will be burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
 }

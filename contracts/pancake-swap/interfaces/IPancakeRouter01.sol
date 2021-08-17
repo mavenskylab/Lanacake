@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.4;
 
-interface IUniswapV2Router01 {
+interface IPancakeRouter01 {
     function factory() external pure returns (address);
 
-    function WBNB() external pure returns (address);
+    function WETH() external pure returns (address);
 
     function addLiquidity(
         address tokenA,
@@ -24,11 +24,11 @@ interface IUniswapV2Router01 {
             uint256 liquidity
         );
 
-    function addLiquidityBNB(
+    function addLiquidityETH(
         address token,
         uint256 amountTokenDesired,
         uint256 amountTokenMin,
-        uint256 amountBNBMin,
+        uint256 amountETHMin,
         address to,
         uint256 deadline
     )
@@ -36,7 +36,7 @@ interface IUniswapV2Router01 {
         payable
         returns (
             uint256 amountToken,
-            uint256 amountBNB,
+            uint256 amountETH,
             uint256 liquidity
         );
 
@@ -50,14 +50,14 @@ interface IUniswapV2Router01 {
         uint256 deadline
     ) external returns (uint256 amountA, uint256 amountB);
 
-    function removeLiquidityBNB(
+    function removeLiquidityETH(
         address token,
         uint256 liquidity,
         uint256 amountTokenMin,
-        uint256 amountBNBMin,
+        uint256 amountETHMin,
         address to,
         uint256 deadline
-    ) external returns (uint256 amountToken, uint256 amountBNB);
+    ) external returns (uint256 amountToken, uint256 amountETH);
 
     function removeLiquidityWithPermit(
         address tokenA,
@@ -73,18 +73,18 @@ interface IUniswapV2Router01 {
         bytes32 s
     ) external returns (uint256 amountA, uint256 amountB);
 
-    function removeLiquidityBNBWithPermit(
+    function removeLiquidityETHWithPermit(
         address token,
         uint256 liquidity,
         uint256 amountTokenMin,
-        uint256 amountBNBMin,
+        uint256 amountETHMin,
         address to,
         uint256 deadline,
         bool approveMax,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external returns (uint256 amountToken, uint256 amountBNB);
+    ) external returns (uint256 amountToken, uint256 amountETH);
 
     function swapExactTokensForTokens(
         uint256 amountIn,
@@ -102,14 +102,14 @@ interface IUniswapV2Router01 {
         uint256 deadline
     ) external returns (uint256[] memory amounts);
 
-    function swapExactBNBForTokens(
+    function swapExactETHForTokens(
         uint256 amountOutMin,
         address[] calldata path,
         address to,
         uint256 deadline
     ) external payable returns (uint256[] memory amounts);
 
-    function swapTokensForExactBNB(
+    function swapTokensForExactETH(
         uint256 amountOut,
         uint256 amountInMax,
         address[] calldata path,
@@ -117,7 +117,7 @@ interface IUniswapV2Router01 {
         uint256 deadline
     ) external returns (uint256[] memory amounts);
 
-    function swapExactTokensForBNB(
+    function swapExactTokensForETH(
         uint256 amountIn,
         uint256 amountOutMin,
         address[] calldata path,
@@ -125,7 +125,7 @@ interface IUniswapV2Router01 {
         uint256 deadline
     ) external returns (uint256[] memory amounts);
 
-    function swapBNBForExactTokens(
+    function swapETHForExactTokens(
         uint256 amountOut,
         address[] calldata path,
         address to,
