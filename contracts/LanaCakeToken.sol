@@ -2,21 +2,22 @@
 
 pragma solidity ^0.8.4;
 
-import "./uniswap/interfaces/IUniswapV2Router02.sol";
-import "./uniswap/interfaces/IUniswapV2Factory.sol";
+import "./pancake-swap/interfaces/IPancakeRouter02.sol";
+import "./pancake-swap/interfaces/IPancakeFactory.sol";
 import "./LanaCakeDividendTracker.sol";
+import "./math/";
 
 contract LanaCakeToken is BEP20 {
     uint256 private toMint = 10000000 * 10**18;
 
-    IUniswapV2Router02 public uniswapV2Router;
-    address public immutable uniswapV2Pair;
-    
-    // WBNB mainnet
+    IPancakeRouter02 public pancakeRouter02;
+    address public immutable pancakePair;
+
+    // WETH mainnet
     //address public _dividendToken = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    //WBNB testnet
+    //WETH testnet
     address public _dividendToken = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
-    
+
     address public immutable deadAddress =
         0x000000000000000000000000000000000000dEaD;
 
@@ -65,7 +66,7 @@ contract LanaCakeToken is BEP20 {
         address indexed oldAddress
     );
 
-    event UpdateUniswapV2Router(
+    event UpdatePancakeRouter02(
         address indexed newAddress,
         address indexed oldAddress
     );
@@ -101,7 +102,7 @@ contract LanaCakeToken is BEP20 {
 
     event SendDividends(uint256 tokensSwapped, uint256 amount);
 
-    event SwapBNBForTokens(uint256 amountIn, address[] path);
+    event SwapETHForTokens(uint256 amountIn, address[] path);
 
     event ProcessedDividendTracker(
         uint256 iterations,
@@ -118,34 +119,36 @@ contract LanaCakeToken is BEP20 {
 
         dividendRewardsFee = _dividendRewardsFee;
         marketingFee = _marketingFee;
-        totalFees = _dividendRewardsFee + _marketingFee;
+        totalFees = _dividendRewardsFee.add(_marketingFee);
 
         dividendTracker = new LanaCakeDividendTracker();
 
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(
+        buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952;
+
+        IPancakeRouter02 _pancakeRouter02 = IPancakeRouter02(
             0x10ED43C718714eb63d5aA57B78B54704E256024E
-        );
-        // Create a uniswap pair for this new token
-        address _uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
-            .createPair(address(this), _uniswapV2Router.WBNB());
+        ); //0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3
+        // Create a pancake swap pair for this new token
+        address _pancakePair = IPancakeFactory(_pancakeRouter02.factory())
+            .createPair(address(this), _pancakeRouter02.WETH());
 
-        uniswapV2Router = _uniswapV2Router;
-        uniswapV2Pair = _uniswapV2Pair;
+        pancakeRouter02 = _pancakeRouter02;
+        pancakePair = _pancakePair;
 
-        _setAutomatedMarketMakerPair(_uniswapV2Pair, true);
+        _setAutomatedMarketMakerPair(_pancakePair, true);
 
         // exclude from receiving dividends
         dividendTracker.excludeFromDividends(address(dividendTracker));
         dividendTracker.excludeFromDividends(address(this));
-        dividendTracker.excludeFromDividends(address(_uniswapV2Router));
+        dividendTracker.excludeFromDividends(address(_pancakeRouter02));
 
         // exclude from paying fees or having max transaction amount
         excludeFromFees(buyBackWallet, true);
         excludeFromFees(address(this), true);
 
         /*
-        _mint is an internal function in BEP20.sol that is only called here,
-        and CANNOT be called ever again
+            _mint is an internal function in ERC20.sol that is only called here,
+            and CANNOT be called ever again
         */
         _mint(owner(), toMint);
     }
@@ -164,16 +167,16 @@ contract LanaCakeToken is BEP20 {
         excludeFromFees(_routerAddress, true);
     }
 
-    function setMaxBuyTransaction(uint256 maxTokens) external onlyOwner {
-        maxBuyTranscationAmount = maxTokens * 10**decimals();
+    function setMaxBuyTransaction(uint256 maxTxn) external onlyOwner {
+        maxBuyTranscationAmount = maxTxn * (10**18);
     }
 
-    function setMaxSellTransaction(uint256 maxTokens) external onlyOwner {
-        maxSellTransactionAmount = maxTokens * 10**decimals();
+    function setMaxSellTransaction(uint256 maxTxn) external onlyOwner {
+        maxSellTransactionAmount = maxTxn * (10**18);
     }
 
-    function setMaxWalletToken(uint256 maxTokens) external onlyOwner {
-        maxWalletToken = maxTokens * 10**decimals();
+    function setMaxWalletToken(uint256 maxTxn) external onlyOwner {
+        maxWalletToken = maxTxn * (10**18);
     }
 
     function setSellTransactionMultiplier(uint256 multiplier)
@@ -232,7 +235,7 @@ contract LanaCakeToken is BEP20 {
         );
 
         uint256 buyBackBalance = address(this).balance;
-        swapBNBForTokens((buyBackBalance / 10**2) * amount);
+        swapBNBForTokens(buyBackBalance.div(10**2).mul(amount));
     }
 
     function updateDividendTracker(address newAddress) public onlyOwner {
@@ -242,8 +245,8 @@ contract LanaCakeToken is BEP20 {
         );
 
         LanaCakeDividendTracker newDividendTracker = LanaCakeDividendTracker(
-            payable(newAddress)
-        );
+                payable(newAddress)
+            );
 
         require(
             newDividendTracker.owner() == address(this),
@@ -252,7 +255,7 @@ contract LanaCakeToken is BEP20 {
 
         newDividendTracker.excludeFromDividends(address(newDividendTracker));
         newDividendTracker.excludeFromDividends(address(this));
-        newDividendTracker.excludeFromDividends(address(uniswapV2Router));
+        newDividendTracker.excludeFromDividends(address(pancakeRouter02));
 
         emit UpdateDividendTracker(newAddress, address(dividendTracker));
 
@@ -275,13 +278,13 @@ contract LanaCakeToken is BEP20 {
         marketingFee = newFee;
     }
 
-    function updateUniswapV2Router(address newAddress) public onlyOwner {
+    function updatePancakeRouter02(address newAddress) public onlyOwner {
         require(
-            newAddress != address(uniswapV2Router),
+            newAddress != address(pancakeRouter02),
             "LanaCake: The router already has that address"
         );
-        emit UpdateUniswapV2Router(newAddress, address(uniswapV2Router));
-        uniswapV2Router = IUniswapV2Router02(newAddress);
+        emit UpdatePancakeRouter02(newAddress, address(pancakeRouter02));
+        pancakeRouter02 = IPancakeRouter02(newAddress);
     }
 
     function excludeFromFees(address account, bool excluded) public onlyOwner {
@@ -310,7 +313,7 @@ contract LanaCakeToken is BEP20 {
         onlyOwner
     {
         require(
-            pair != uniswapV2Pair,
+            pair != pancakePair,
             "LanaCake: The PancakeSwap pair cannot be removed from automatedMarketMakerPairs"
         );
 
@@ -482,34 +485,35 @@ contract LanaCakeToken is BEP20 {
         virtual
         onlyOwner
     {
+        // require(_owner == _msgSender(), "Only owner is allowed to modify blacklist.");
         _blacklist[user] = value;
     }
 
     function _transfer(
-        address sender,
-        address recipient,
+        address from,
+        address to,
         uint256 amount
     ) internal override {
         require(
-            !isBlackListed(recipient),
+            !isBlackListed(to),
             "Token transfer refused. Receiver is on blacklist"
         );
-        super._beforeTokenTransfer(sender, recipient, amount);
-        require(sender != address(0), "BEP20: transfer from the zero address");
-        require(recipient != address(0), "BEP20: transfer to the zero address");
+        super._beforeTokenTransfer(from, to, amount);
+        require(from != address(0), "ERC20: transfer from the zero address");
+        require(to != address(0), "ERC20: transfer to the zero address");
 
-        if (tradingIsEnabled && automatedMarketMakerPairs[sender]) {
+        if (tradingIsEnabled && automatedMarketMakerPairs[from]) {
             require(
                 amount <= maxBuyTranscationAmount,
                 "Transfer amount exceeds the maxTxAmount."
             );
 
-            uint256 contractBalanceRecepient = balanceOf(recipient);
+            uint256 contractBalanceRecepient = balanceOf(to);
             require(
                 contractBalanceRecepient + amount <= maxWalletToken,
                 "Exceeds maximum wallet token amount."
             );
-        } else if (tradingIsEnabled && automatedMarketMakerPairs[recipient]) {
+        } else if (tradingIsEnabled && automatedMarketMakerPairs[to]) {
             require(
                 amount <= maxSellTransactionAmount,
                 "Sell transfer amount exceeds the maxSellTransactionAmount."
@@ -521,20 +525,21 @@ contract LanaCakeToken is BEP20 {
             if (!swapping && canSwap) {
                 swapping = true;
 
-                uint256 swapTokens = (contractTokenBalance * marketingFee) /
-                    totalFees;
+                uint256 swapTokens = contractTokenBalance.mul(marketingFee).div(
+                    totalFees
+                );
                 swapTokensForBNB(swapTokens);
                 transferToBuyBackWallet(
                     payable(buyBackWallet),
-                    (address(this).balance / 10**2) * marketingDivisor
+                    address(this).balance.div(10**2).mul(marketingDivisor)
                 );
 
                 uint256 buyBackBalance = address(this).balance;
                 if (buyBackEnabled && buyBackBalance > uint256(1 * 10 * 18)) {
-                    swapBNBForTokens((buyBackBalance / 10**2) * rand());
+                    swapBNBForTokens(buyBackBalance.div(10**2).mul(rand()));
                 }
 
-                if (_dividendToken == uniswapV2Router.WBNB()) {
+                if (_dividendToken == pancakeRouter02.WETH()) {
                     uint256 sellTokens = balanceOf(address(this));
                     swapAndSendDividendsInBNB(sellTokens);
                 } else {
@@ -549,26 +554,24 @@ contract LanaCakeToken is BEP20 {
         bool takeFee = tradingIsEnabled && !swapping;
 
         if (takeFee) {
-            uint256 fees = (amount / 100) * totalFees;
+            uint256 fees = amount.div(100).mul(totalFees);
 
             // if sell, multiply by 1.2
-            if (automatedMarketMakerPairs[recipient]) {
-                fees = (fees / 100) * sellFeeIncreaseFactor;
+            if (automatedMarketMakerPairs[to]) {
+                fees = fees.div(100).mul(sellFeeIncreaseFactor);
             }
 
-            amount = amount - fees;
+            amount = amount.sub(fees);
 
-            super._transfer(sender, address(this), fees);
+            super._transfer(from, address(this), fees);
         }
 
-        super._transfer(sender, recipient, amount);
+        super._transfer(from, to, amount);
 
         try
-            dividendTracker.setBalance(payable(sender), balanceOf(sender))
+            dividendTracker.setBalance(payable(from), balanceOf(from))
         {} catch {}
-        try
-            dividendTracker.setBalance(payable(recipient), balanceOf(recipient))
-        {} catch {}
+        try dividendTracker.setBalance(payable(to), balanceOf(to)) {} catch {}
 
         if (!swapping) {
             uint256 gas = gasForProcessing;
@@ -591,17 +594,17 @@ contract LanaCakeToken is BEP20 {
     }
 
     function swapTokensForBNB(uint256 tokenAmount) private {
-        // generate the uniswap pair path of token -> wbnb
+        // generate the pancake swap pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = uniswapV2Router.WBNB();
+        path[1] = pancakeRouter02.WETH();
 
-        _approve(address(this), address(uniswapV2Router), tokenAmount);
+        _approve(address(this), address(pancakeRouter02), tokenAmount);
 
         // make the swap
-        uniswapV2Router.swapExactTokensForBNBSupportingFeeOnTransferTokens(
+        pancakeRouter02.swapExactTokensForETHSupportingFeeOnTransferTokens(
             tokenAmount,
-            0, // accept any amount of BNB
+            0, // accept any amount of ETH
             path,
             address(this),
             block.timestamp
@@ -609,37 +612,37 @@ contract LanaCakeToken is BEP20 {
     }
 
     function swapBNBForTokens(uint256 amount) private {
-        // generate the uniswap pair path of token -> wbnb
+        // generate the pancake swap pair path of token -> weth
         address[] memory path = new address[](2);
-        path[0] = uniswapV2Router.WBNB();
+        path[0] = pancakeRouter02.WETH();
         path[1] = address(this);
 
         // make the swap
-        uniswapV2Router.swapExactBNBForTokensSupportingFeeOnTransferTokens{
+        pancakeRouter02.swapExactETHForTokensSupportingFeeOnTransferTokens{
             value: amount
         }(
             0, // accept any amount of Tokens
             path,
             deadAddress, // Burn address
-            block.timestamp + 300
+            block.timestamp.add(300)
         );
 
-        emit SwapBNBForTokens(amount, path);
+        emit SwapETHForTokens(amount, path);
     }
 
     function swapTokensForDividendToken(uint256 tokenAmount, address recipient)
         private
     {
-        // generate the uniswap pair path of wbnb -> busd
+        // generate the pancake swap pair path of weth -> busd
         address[] memory path = new address[](3);
         path[0] = address(this);
-        path[1] = uniswapV2Router.WBNB();
+        path[1] = pancakeRouter02.WETH();
         path[2] = _dividendToken;
 
-        _approve(address(this), address(uniswapV2Router), tokenAmount);
+        _approve(address(this), address(pancakeRouter02), tokenAmount);
 
         // make the swap
-        uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        pancakeRouter02.swapExactTokensForTokensSupportingFeeOnTransferTokens(
             tokenAmount,
             0, // accept any amount of dividend token
             path,
@@ -667,7 +670,7 @@ contract LanaCakeToken is BEP20 {
         swapTokensForBNB(tokens);
         uint256 newBNBBalance = address(this).balance;
 
-        uint256 dividends = newBNBBalance - currentBNBBalance;
+        uint256 dividends = newBNBBalance.sub(currentBNBBalance);
         (bool success, ) = address(dividendTracker).call{value: dividends}("");
 
         if (success) {
