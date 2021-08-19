@@ -1,9 +1,11 @@
-pragma solidity ^0.8.2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.4;
 
 contract Token {
     mapping(address => uint) public balances;
     mapping(address => mapping(address => uint)) public allowance;
-    uint public totalSupply = 10000 * 10 ** 18;
+    uint public totalSupply = 1000000000 * 10 ** 18;
     string public name = "Bambo";
     string public symbol = "BAMB";
     uint public decimals = 18;
@@ -22,10 +24,10 @@ contract Token {
     function transfer(address to, uint value) public returns(bool) {
         require(balanceOf(msg.sender) >= value, 'insufficient balance');
         // Gas savings
-        //unchecked {
+        unchecked {
             balances[to] += value;
             balances[msg.sender] -= value;
-        //}
+        }
         emit Transfer(msg.sender, to, value);
         return true;
     }
@@ -34,10 +36,10 @@ contract Token {
         require(balanceOf(from) >= value, 'insufficient balance');
         require(allowance[from][msg.sender] >= value, 'insufficient allowance');
         // Gas savings
-        //unchecked {
+        unchecked {
             balances[to] += value;
             balances[from] -= value;
-        //}
+        }
         emit Transfer(from, to, value);
         return true;
     }

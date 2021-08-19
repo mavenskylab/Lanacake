@@ -329,7 +329,7 @@
 						"type": "address[]"
 					}
 				],
-				"name": "SwapBNBForTokens",
+				"name": "SwapETHForTokens",
 				"type": "event"
 			},
 			{
@@ -392,7 +392,7 @@
 						"type": "address"
 					}
 				],
-				"name": "UpdateUniswapV2Router",
+				"name": "UpdatePancakeRouter02",
 				"type": "event"
 			},
 			{
@@ -1088,6 +1088,32 @@
 			},
 			{
 				"inputs": [],
+				"name": "pancakePair",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "pancakeRouter02",
+				"outputs": [
+					{
+						"internalType": "contract IPancakeRouter02",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "prepareForPreSale",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -1213,7 +1239,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "maxTokens",
+						"name": "maxTxn",
 						"type": "uint256"
 					}
 				],
@@ -1226,7 +1252,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "maxTokens",
+						"name": "maxTxn",
 						"type": "uint256"
 					}
 				],
@@ -1239,7 +1265,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "maxTokens",
+						"name": "maxTxn",
 						"type": "uint256"
 					}
 				],
@@ -1419,32 +1445,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "uniswapV2Pair",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "uniswapV2Router",
-				"outputs": [
-					{
-						"internalType": "contract IUniswapV2Router02",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -1530,7 +1530,7 @@
 						"type": "address"
 					}
 				],
-				"name": "updateUniswapV2Router",
+				"name": "updatePancakeRouter02",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -1670,11 +1670,11 @@
 			]
 		},
 		"contracts/LanaCakeToken.sol": {
-			"keccak256": "0x3dbc73a279936b4015f0b705bd2bb80529859613ded7e800322045568ad08f22",
+			"keccak256": "0x404cf7976e26647632a0f1fa26c631f007b28353492149d2f8ceb258719d9d0a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://aea0b3daf9aef7b8ba60edba0c364d802d8f4917068cc7c2c18525e756a6be7f",
-				"dweb:/ipfs/QmYEQqh5ag3FB1VMgZ7bkWcGDPwkAH6KEDsyJwXxQBBBjU"
+				"bzz-raw://307c46c3ace1d1b251faa7ad42cd097c5c02b22262a045e0b6c2dd46fa53b1df",
+				"dweb:/ipfs/QmScbEHAVyvCsBEda8DBT4oxjC6LkzEEXFUhFLadn95s9g"
 			]
 		},
 		"contracts/access/Ownable.sol": {
@@ -1693,20 +1693,52 @@
 				"dweb:/ipfs/QmZ2s6bjXmQxc5MMB2huJqJYVDG3517bpwm6BvS79Hn3UQ"
 			]
 		},
-		"contracts/token/BEP20/BEP20.sol": {
-			"keccak256": "0x4e7fdd7c5bc4c68656e7dff19158ae3e6e176e5936f2536ba4f0558212e1b170",
+		"contracts/math/SafeMath.sol": {
+			"keccak256": "0xc33913c675247ff64cafd9586fbcabf8398ed74de1ff32445c8ea3b7ec73ae0f",
 			"license": "GPL-3.0-or-later",
 			"urls": [
-				"bzz-raw://f2ce6e09bf6ca36decba9512fb41ba73939149bb28bdd7385f43405ed19709cc",
-				"dweb:/ipfs/QmPqeRQBfokeyXGtKtBQaEbE5CexhZkVejhsNSRGeSuboD"
+				"bzz-raw://43a7d7a846889676287fdc61d60627e6320d2c93289a3fa51d5ce1e8de532c6c",
+				"dweb:/ipfs/QmbrYQex1zY6aX7483AMfpkECQBK7kivmZMChuXdECJmRc"
+			]
+		},
+		"contracts/pancake-swap/interfaces/IPancakeFactory.sol": {
+			"keccak256": "0x427e1ad01258fed1e04e6aa8e5e56ff4e75d1aecc467422c91fd2bf198aeb546",
+			"license": "GPL-3.0-or-later",
+			"urls": [
+				"bzz-raw://5a106e7677eb457263ff804e33a2685e313c9287f4da990b9207319b0299911c",
+				"dweb:/ipfs/QmTxDoRpL6uF9Y24omguEW8ctsjJgvfTfqqVJRyGjoDAvq"
+			]
+		},
+		"contracts/pancake-swap/interfaces/IPancakeRouter01.sol": {
+			"keccak256": "0xcf87bbf5598860650596e46b2fb2e5f649e5a4e4ece1f3aea1b8c9242c18642d",
+			"license": "GPL-3.0-or-later",
+			"urls": [
+				"bzz-raw://188ce731d1628e18e4e3bd736ca5bd63f06c815a53c054901ea9925e1eda96e0",
+				"dweb:/ipfs/QmVfBaG9Fo4gRbAHPYtgPfZuvmXhS69oLMjv2ZrsAMBskj"
+			]
+		},
+		"contracts/pancake-swap/interfaces/IPancakeRouter02.sol": {
+			"keccak256": "0x5bfb041a150e754d38b9cdec5330d3296d798c6f59eb7039ed5f7c71d4030ddf",
+			"license": "GPL-3.0-or-later",
+			"urls": [
+				"bzz-raw://1681a0690890ceab5e8c5a0422adedbeb76e8922b3a38c91e6b7d7842aa7b5da",
+				"dweb:/ipfs/QmPpWPmaUuFSN6y5BVWvxPKHGQipWCfyugeMH8iZPzczm8"
+			]
+		},
+		"contracts/token/BEP20/BEP20.sol": {
+			"keccak256": "0x7d0ec725c3a30b1720003994fffcfbc315e8498b3ef5ede8106c4c142aa8b937",
+			"license": "GPL-3.0-or-later",
+			"urls": [
+				"bzz-raw://18595ae2d40aef4165a19ed76a988f6ea3c646c82f36f97c463ee419d99b17a7",
+				"dweb:/ipfs/QmUW5hFpaH17iNvWkeAWqdH8tPXMbaARfEJPCvxP6neuis"
 			]
 		},
 		"contracts/token/BEP20/IBEP20.sol": {
-			"keccak256": "0x70b4e46320f5a9208917a48b7fab95e3bf4a61188dab152cdf43a6a683d86b8c",
+			"keccak256": "0xb4067f07c4afcc39f9e0020de8dcbae92d0f35e116a56b9bfc6171a0747640fd",
 			"license": "GPL-3.0-or-later",
 			"urls": [
-				"bzz-raw://4ae9dc79fd57bc3fe1a017c0dcf21bdc7e3cdbb9e0d9ed2ce7c1d3aa11fd42c7",
-				"dweb:/ipfs/QmNsbBZyiS7fHvd8kLHzE8R3V1XfAHZgUk5TQDZ7UbTtgW"
+				"bzz-raw://b9261b82295de51a3521dbcb6e7c7b35113df77534db0f35dece8376eb2ab838",
+				"dweb:/ipfs/QmQMaiyusAHpUjD5eMrK1kr46WXTVLfi3CFEDBKWu6ohxo"
 			]
 		},
 		"contracts/token/dividend/DividendPayingToken.sol": {
@@ -1733,28 +1765,12 @@
 				"dweb:/ipfs/QmUqoy4v6AK4eudzLRFrFzLqczWGxFmSvrUwMeKxfEHJqp"
 			]
 		},
-		"contracts/uniswap/interfaces/IUniswapV2Factory.sol": {
-			"keccak256": "0x3bcaea75f5fde136af6dc781f4b411d2e30af9acd8101ef4af694966069b4438",
+		"contracts/utils/Address.sol": {
+			"keccak256": "0xcce49c7773daecdc80a657be50e0066c289c24bf885ad581612006c5b26ca8d0",
 			"license": "GPL-3.0-or-later",
 			"urls": [
-				"bzz-raw://90cf91340dceef1c9d1a2583c45f76938a2c20d1c7945b501bd0f30f96eb32a3",
-				"dweb:/ipfs/QmetWnVWRTqqapSnoVkznfN3ixpkSQTcg8bQ9bkyx4XfLa"
-			]
-		},
-		"contracts/uniswap/interfaces/IUniswapV2Router01.sol": {
-			"keccak256": "0xd291ee5586fd81f9a254150e7a4be94b4f78c5307313c8201eaa3da1de4b08aa",
-			"license": "GPL-3.0-or-later",
-			"urls": [
-				"bzz-raw://90ca45e7a905b175be295276ee0dea75477a6a7f774982cc033ba08d59be3186",
-				"dweb:/ipfs/QmYSgwoTF7oDsSWEsih2Brm6iDnou78dWwP1HRARfmwXhJ"
-			]
-		},
-		"contracts/uniswap/interfaces/IUniswapV2Router02.sol": {
-			"keccak256": "0x1a81ec3844d101d0e9a8897f10e94c5344170b0899ec3746a5f2014c479ec0f6",
-			"license": "GPL-3.0-or-later",
-			"urls": [
-				"bzz-raw://6b732ff03543954443d096c949dad1d4a5f3346b5471bfc5a70b33e87a2d5b63",
-				"dweb:/ipfs/QmPvfoK5i5jZbkb7HfoB6ZUAULNLKM8QkSJ4qQvw9VUeLg"
+				"bzz-raw://f81545ca6a7dc3de5af05b5ed607f7158e84030762070e443353080bed60e79b",
+				"dweb:/ipfs/QmVxGXGvM3uXoJPm2MWPjdXcHMJFZrZ93WSkv9HVWwAeBs"
 			]
 		}
 	},

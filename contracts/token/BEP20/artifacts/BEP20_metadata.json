@@ -6,6 +6,22 @@
 	"output": {
 		"abi": [
 			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "name_",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "symbol_",
+						"type": "string"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
 				"anonymous": false,
 				"inputs": [
 					{
@@ -465,11 +481,11 @@
 			]
 		},
 		"contracts/token/BEP20/BEP20.sol": {
-			"keccak256": "0xd76a192fafc5181c5e01a5987e75aba57739be3d655b4a72cbd7bc3c601d0884",
+			"keccak256": "0x7d0ec725c3a30b1720003994fffcfbc315e8498b3ef5ede8106c4c142aa8b937",
 			"license": "GPL-3.0-or-later",
 			"urls": [
-				"bzz-raw://e07f7962048d39c0dbcf09bff81537694312891087d5065be68828fbc68b5d08",
-				"dweb:/ipfs/QmVEbmmvW9y6k8vrWHczTbrgwbQBYB1GtG5TPh8VwL48sb"
+				"bzz-raw://18595ae2d40aef4165a19ed76a988f6ea3c646c82f36f97c463ee419d99b17a7",
+				"dweb:/ipfs/QmUW5hFpaH17iNvWkeAWqdH8tPXMbaARfEJPCvxP6neuis"
 			]
 		},
 		"contracts/token/BEP20/IBEP20.sol": {

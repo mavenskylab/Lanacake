@@ -20,7 +20,7 @@ contract LanaCakeToken is BEP20 {
     // WETH mainnet
     //address public _dividendToken = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     //WETH testnet
-    address public _dividendToken = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+    address public _dividendToken = 0xD3a7Ed22A8b5884C3035A2026424f48c34b8E824;
 
     address public immutable deadAddress =
         0x000000000000000000000000000000000000dEaD;
@@ -32,7 +32,7 @@ contract LanaCakeToken is BEP20 {
 
     LanaCakeDividendTracker public dividendTracker;
 
-    address public buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952; // Need to change
+    address public buyBackWallet = 0xfe6A5fd0cc4d070B3d9c08310814791b61a1631c; // Need to change
 
     uint256 public maxBuyTranscationAmount = toMint;
     uint256 public maxSellTransactionAmount = toMint;
@@ -129,9 +129,15 @@ contract LanaCakeToken is BEP20 {
 
         buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952;
 
+        // Mainnet
+        // IPancakeRouter02 _pancakeRouter02 = IPancakeRouter02(
+        //     0x10ED43C718714eb63d5aA57B78B54704E256024E
+        // );
+        // Testnet
         IPancakeRouter02 _pancakeRouter02 = IPancakeRouter02(
-            0x10ED43C718714eb63d5aA57B78B54704E256024E
-        ); //0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3
+            0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3
+        );
+
         // Create a pancake swap pair for this new token
         address _pancakePair = IPancakeFactory(_pancakeRouter02.factory())
             .createPair(address(this), _pancakeRouter02.WETH());

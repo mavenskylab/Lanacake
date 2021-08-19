@@ -32,7 +32,7 @@ import '../../utils/Address.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IBEP20-approve}.
  */
-abstract contract BEP20 is Context, IBEP20, Ownable {
+contract BEP20 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
