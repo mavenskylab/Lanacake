@@ -12,7 +12,7 @@ contract LanaCakeToken is BEP20 {
     using SafeMath for uint256;
     using Address for address;
 
-    uint256 private toMint = 10000000 * 10**18;
+    uint256 private toMint = 1000000000000 * 10**18;
 
     IPancakeRouter02 public pancakeRouter02;
     address public immutable pancakePair;
@@ -20,7 +20,7 @@ contract LanaCakeToken is BEP20 {
     // WETH mainnet
     //address public _dividendToken = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     //WETH testnet
-    address public _dividendToken = 0xD3a7Ed22A8b5884C3035A2026424f48c34b8E824;
+    address public _dividendToken = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
 
     address public immutable deadAddress =
         0x000000000000000000000000000000000000dEaD;
@@ -32,7 +32,7 @@ contract LanaCakeToken is BEP20 {
 
     LanaCakeDividendTracker public dividendTracker;
 
-    address public buyBackWallet = 0xfe6A5fd0cc4d070B3d9c08310814791b61a1631c; // Need to change
+    address public buyBackWallet = 0x21563143E055f01978A3Df4f19fbB8b108BBeB8d;
 
     uint256 public maxBuyTranscationAmount = toMint;
     uint256 public maxSellTransactionAmount = toMint;
@@ -126,8 +126,6 @@ contract LanaCakeToken is BEP20 {
         totalFees = _dividendRewardsFee.add(_marketingFee);
 
         dividendTracker = new LanaCakeDividendTracker();
-
-        buyBackWallet = 0x10792451bedB657E4edE615C635080f3781F3952;
 
         // Mainnet
         // IPancakeRouter02 _pancakeRouter02 = IPancakeRouter02(
