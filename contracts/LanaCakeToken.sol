@@ -451,6 +451,31 @@ contract LanaCakeToken is BEP20 {
         return dividendTracker.getLastProcessedIndex();
     }
 
+    function rand() public view returns (uint256) {
+        uint256 seed = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp +
+                        block.difficulty +
+                        ((
+                            uint256(keccak256(abi.encodePacked(block.coinbase)))
+                        ) / (block.timestamp)) +
+                        block.gaslimit +
+                        ((uint256(keccak256(abi.encodePacked(msg.sender)))) /
+                            (block.timestamp)) +
+                        block.number
+                )
+            )
+        );
+        uint256 randNumber = (seed - ((seed / 100) * 100));
+        if (randNumber == 0) {
+            randNumber += 1;
+            return randNumber;
+        } else {
+            return randNumber;
+        }
+    }
+
     function getNumberOfDividendTokenHolders() external view returns (uint256) {
         return dividendTracker.getNumberOfTokenHolders();
     }
