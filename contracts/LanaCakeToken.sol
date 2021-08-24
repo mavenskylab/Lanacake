@@ -25,10 +25,9 @@ contract LanaCakeToken is BEP20 {
     address public immutable deadAddress =
         0x000000000000000000000000000000000000dEaD;
 
-    bool private swapping;
+    bool private swapping =  false;
     bool public tradingIsEnabled = false;
     bool public buyBackEnabled = false;
-    bool public buyBackRandomEnabled = true;
 
     LanaCakeDividendTracker public dividendTracker;
 
@@ -36,7 +35,7 @@ contract LanaCakeToken is BEP20 {
 
     uint256 public maxBuyTranscationAmount = toMint;
     uint256 public maxSellTransactionAmount = toMint;
-    uint256 public swapTokensAtAmount = toMint / 100;
+    uint256 public swapTokensAtAmount = toMint / 1000 * 10**18;
     uint256 public maxWalletToken = toMint;
 
     uint256 public dividendRewardsFee;
@@ -76,7 +75,6 @@ contract LanaCakeToken is BEP20 {
     );
 
     event BuyBackEnabledUpdated(bool enabled);
-    event BuyBackRandomEnabledUpdated(bool enabled);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
 
     event ExcludeFromFees(address indexed account, bool isExcluded);
@@ -208,6 +206,7 @@ contract LanaCakeToken is BEP20 {
 
     function prepareForPreSale() external onlyOwner {
         setTradingIsEnabled(false);
+        setBuyBackEnabled(false);
         dividendRewardsFee = 0;
         marketingFee = 0;
         maxBuyTranscationAmount = totalSupply();
@@ -215,6 +214,8 @@ contract LanaCakeToken is BEP20 {
     }
 
     function afterPreSale() external onlyOwner {
+        setTradingIsEnabled(true);
+        setBuyBackEnabled(true);
         dividendRewardsFee = 8;
         marketingFee = 4;
         maxBuyTranscationAmount = totalSupply();
@@ -229,11 +230,6 @@ contract LanaCakeToken is BEP20 {
     function setBuyBackEnabled(bool _enabled) public onlyOwner {
         buyBackEnabled = _enabled;
         emit BuyBackEnabledUpdated(_enabled);
-    }
-
-    function setBuyBackRandomEnabled(bool _enabled) public onlyOwner {
-        buyBackRandomEnabled = _enabled;
-        emit BuyBackRandomEnabledUpdated(_enabled);
     }
 
     function triggerBuyBack(uint256 amount) public onlyOwner {
@@ -453,31 +449,6 @@ contract LanaCakeToken is BEP20 {
 
     function getLastProcessedIndex() external view returns (uint256) {
         return dividendTracker.getLastProcessedIndex();
-    }
-
-    function rand() public view returns (uint256) {
-        uint256 seed = uint256(
-            keccak256(
-                abi.encodePacked(
-                    block.timestamp +
-                        block.difficulty +
-                        ((
-                            uint256(keccak256(abi.encodePacked(block.coinbase)))
-                        ) / (block.timestamp)) +
-                        block.gaslimit +
-                        ((uint256(keccak256(abi.encodePacked(msg.sender)))) /
-                            (block.timestamp)) +
-                        block.number
-                )
-            )
-        );
-        uint256 randNumber = (seed - ((seed / 100) * 100));
-        if (randNumber == 0) {
-            randNumber += 1;
-            return randNumber;
-        } else {
-            return randNumber;
-        }
     }
 
     function getNumberOfDividendTokenHolders() external view returns (uint256) {
