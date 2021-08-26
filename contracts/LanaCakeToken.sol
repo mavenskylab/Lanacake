@@ -238,7 +238,7 @@ contract LanaCakeToken is BEP20 {
             "LanaCake: A swapping process is currently running, wait till that is complete"
         );
 
-        uint256 buyBackBalance = address(this).balance;
+        uint256 buyBackBalance = balanceOf(address(this));
         swapBNBForTokens(buyBackBalance.div(10**2).mul(amount));
     }
 
@@ -493,6 +493,14 @@ contract LanaCakeToken is BEP20 {
         _blacklist[user] = value;
     }
 
+    function getPairAddress() public view returns (address) {
+        return pancakePair;
+    }
+
+    function test() public view returns (bool) {
+        return automatedMarketMakerPairs[pancakePair];
+    }
+
     function _transfer(
         address from,
         address to,
@@ -535,10 +543,10 @@ contract LanaCakeToken is BEP20 {
                 swapTokensForBNB(swapTokens);
                 transferToBuyBackWallet(
                     payable(buyBackWallet),
-                    address(this).balance.div(10**2).mul(marketingDivisor)
+                    balanceOf(address(this)).div(10**2).mul(marketingDivisor)
                 );
 
-                uint256 buyBackBalance = address(this).balance;
+                uint256 buyBackBalance = balanceOf(address(this));
                 if (buyBackEnabled && buyBackBalance > uint256(1 * 10 * 18)) {
                     swapBNBForTokens(buyBackBalance.div(10**2).mul(rand()));
                 }
@@ -670,9 +678,9 @@ contract LanaCakeToken is BEP20 {
     }
 
     function swapAndSendDividendsInBNB(uint256 tokens) private {
-        uint256 currentBNBBalance = address(this).balance;
+        uint256 currentBNBBalance = balanceOf(address(this));
         swapTokensForBNB(tokens);
-        uint256 newBNBBalance = address(this).balance;
+        uint256 newBNBBalance = balanceOf(address(this));
 
         uint256 dividends = newBNBBalance.sub(currentBNBBalance);
         (bool success, ) = address(dividendTracker).call{value: dividends}("");

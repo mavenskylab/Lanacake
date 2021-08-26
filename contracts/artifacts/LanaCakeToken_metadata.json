@@ -877,6 +877,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "getPairAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "getTotalDividendsDistributed",
 				"outputs": [
 					{
@@ -1289,6 +1302,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "test",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "totalFees",
 				"outputs": [
 					{
@@ -1631,11 +1657,11 @@
 			]
 		},
 		"contracts/LanaCakeToken.sol": {
-			"keccak256": "0xdde0fa37c61fcd065172f41e56b78d5fe3b21dd0a5e7022e66f2d1352c6c8cec",
+			"keccak256": "0xef9e19b7deb6ccc699b0380a9751669ec5c396668fea2145198076a1b8f9fc74",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://1763dc1ca192dbaeca9a581c3f0965c0e200f70ba2b66cb3fdc9540efd7774a9",
-				"dweb:/ipfs/QmeZzQVkinuuu3vaZxdDLEEggitMKzYfPPQhGr9HJ6PPbW"
+				"bzz-raw://c0e10080977ada0e624b521d94e47e5aff2ffb4488c85e6946e20b5ba846bff1",
+				"dweb:/ipfs/Qmf4w2pZyMt1BkL4Ri5tuWXxBBeqAbwBWSTn72BQGK7fMB"
 			]
 		},
 		"contracts/access/Ownable.sol": {
